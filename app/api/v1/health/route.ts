@@ -36,7 +36,7 @@ export async function GET() {
   return Response.json({
     ok: true,
     service: "powerchain-launchpad",
-    version: "1.3.0",
+    version: "1.0.0",
     cluster: config.cluster,
     liveSettlementReady,
     poolExecutionReady,

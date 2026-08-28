@@ -1,8 +1,8 @@
 {
   "name": "powerchain-launchpad",
-  "version": "1.3.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "PowerChain Launchpad and PowerPay for Solana Token-2022 sales, claims, merchant payments and revision-safe controlled liquidity-pool graduation.",
+  "description": "PowerChain Launchpad \u2014 production-oriented Solana Token-2022 token sales, claims, payments and controlled liquidity-pool graduation.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

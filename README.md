@@ -1,159 +1,201 @@
 # PowerChain Launchpad
 
-**Version 1.3.0**
+**Canonical release: 1.0.0**
 
-Production-oriented **Next.js 16 + TypeScript + Tailwind CSS** application for Solana Token-2022 launches, token sales, claims, merchant payments and controlled liquidity-pool graduation.
+PowerChain Launchpad is a production-oriented **Next.js 16, TypeScript and Tailwind CSS** application for Solana token launches, Token-2022 sales, claims, merchant payments and controlled liquidity-pool graduation.
 
-## Included
+The application is designed around server-authoritative financial state, wallet-approved transactions and fail-closed execution. It never requests or stores private keys.
 
-- PowerChain `Logo` component, local PWRC/SOL/USDC/SUI assets, app icons and PWA shell
-- Token sale page with stage, cap, exact base-unit sold accounting, progress and countdown; server mutations enforce lifecycle transitions and prevent reducing the cap below already-sold allocation
-- `/launch/pools` pool registry with status + venue filters, search, pair identity, launch countdown, initial-price display and linked-sale graduation progress
-- `/launch/pools/[id]` deterministic pool review with exact BigInt-safe price formatting, mint-decimal-aware liquidity math, current-vs-approved hashes, stale-review detection, graduation progress, execution-readiness gates and Solscan evidence links
-- `/dashboard/admin/pools` wallet-authorized pool manager with separate signed save and review-approval actions, record/configuration revisions, conflict detection and explicit clearing of venue-default fee tiers
-- Optimistic concurrency on sale and pool mutations so a stale operator session cannot silently overwrite a newer signed revision
-- `/api/v1/pools/[id]/readiness` plus review/execution envelopes in pool list/detail APIs
-- Pool adapter capability registry that distinguishes a configured adapter version from an actually implemented transaction builder
-- Raydium CPMM, Meteora DAMM v2 and Orca Whirlpool adapter boundaries that fail closed until an implemented adapter version is configured; adapter-version changes invalidate prior review approval
-- PowerPay checkout with immutable server-authoritative quotes and a fixed 2% PowerChain fee policy
-- PWRC Token-2022 `TransferFeeConfig` inspection, exact net-to-merchant gross-up and maximum-fee-cap protection
-- SOL/USDC merchant + explicit PowerChain fee transfer paths
-- Payer-paid Solana network fee disclosure
-- Send, receive, claims and transaction explorer routes
-- One-time nonce wallet challenges for administrator reads and mutations
-- Validated-only administrator transaction evidence plus signed operations counters and recent audit events
-- Sale admin editing for schedules, accepted SOL/USDC/PWRC assets, lifecycle stage and allocation tiers
-- SHA-256 transaction-intent binding to the exact unsigned message reviewed by the wallet
-- Confirmed purchase → claim-allocation materialization with exact base units and duplicate protection
-- About, information, terms, privacy, cookies, loading and 404 routes
-- JSON-backed single-node repository for local development
-- Anchor reference programs under `programs/tokensale` and `programs/factory`
+## Product surfaces
 
-## Launch pool lifecycle
+| Surface | Purpose |
+| --- | --- |
+| `/launch` | Launch discovery and token-sale entry point |
+| `/launch/pools` | Liquidity-pool registry, lifecycle, graduation progress and venue status |
+| `/sales/[id]` | Sale details, stages, allocation, countdown and purchase flow |
+| `/claim` | Validated allocation and claim workflow |
+| `/payments` | PowerPay merchant checkout |
+| `/send` / `/receive` | Wallet token/payment transfer flows |
+| `/explorer` | Validated transaction evidence and Solscan links |
+| `/dashboard/admin` | Authority-only operational controls and validated transaction visibility |
+| `/dashboard/admin/pools` | Pool configuration, deterministic review and execution-readiness controls |
+| `/about`, `/information`, `/legal/*` | Product, information and legal surfaces |
+
+## Core capabilities
+
+- Solana wallet connection with user-approved signing.
+- Token-2022-aware PWRC payment handling.
+- Fixed **200 bps (2%) PowerChain platform fee** policy.
+- Solana network fees remain separate and are paid by the transaction fee payer.
+- Server-authoritative quotes with deterministic SHA-256 hashes and idempotency protection.
+- Exact unsigned-transaction intent binding before wallet signature acceptance.
+- RPC confirmation and exact message matching before settlement is considered validated.
+- Exact base-unit sale accounting; zero-value financial operations are rejected.
+- Controlled token-sale lifecycle, schedules, caps, payment assets and allocation tiers.
+- Validated purchase-to-claim allocation reconciliation with duplicate protection.
+- One-time nonce challenges for administrator reads and mutations.
+- Optimistic concurrency for sale and pool administration.
+- Local PWRC, SOL, USDC and SUI assets, reusable `Logo` component and PWA shell.
+- Loading, not-found, information, privacy, terms and cookie routes.
+- Anchor reference programs under `programs/tokensale` and `programs/factory`.
+
+## Launch pools
+
+`/launch/pools` models pool configuration and graduation independently from the sale UI.
+
+Supported venue boundaries:
+
+- Raydium CPMM
+- Meteora DAMM v2
+- Orca Whirlpool
+
+Canonical lifecycle:
 
 ```text
 DRAFT
-  ↓ configuration + authority validation
+  ↓ configuration
 SCHEDULED
-  ↓ save exact configuration
-REVIEW APPROVAL
-  ↓ one-time wallet signature binds current hash + adapter version
+  ↓ deterministic review
+REVIEW APPROVED
+  ↓ launch/graduation gates satisfied
 READY
-  ↓ dedicated venue build/reconciliation boundary
+  ↓ venue transaction builder + wallet approval
 CREATING
-  ↓ wallet signature + on-chain reconciliation
+  ↓ on-chain reconciliation
 LIVE
-  ↓ venue/indexer verification
+  ↓ verified graduation
 GRADUATED
 ```
 
-The current repository implements the registry, review, validation and authority-management boundary. It **does not fabricate Raydium, Meteora or Orca instructions**. A pool cannot reach `READY` unless the venue adapter version is configured **and** an authority has separately approved the current deterministic snapshot. Live pool identity (`poolAddress`, `lpMint`, `creationSignature`) is reserved for a dedicated on-chain reconciliation path.
+### Pool trust model
 
-### Pool review hash
+A pool is not executable merely because its configuration is valid. The server separately evaluates:
 
-The server hashes the canonical stored configuration including:
+1. configuration validity;
+2. authority validation;
+3. current deterministic review approval;
+4. launch time and linked-sale graduation conditions;
+5. lifecycle eligibility;
+6. on-chain identity/reconciliation state; and
+7. availability of an explicitly implemented venue transaction builder.
 
-- base and quote mint
-- base and quote mint decimals
-- sale linkage
-- venue
-- authority and treasury wallet
-- initial base/quote liquidity
-- fee tier
-- launch time
-- graduation threshold
-- adapter version
+Configuring an adapter version does **not** imply that an executable builder exists. Venue execution fails closed until a real adapter is implemented, registered, tested and configured.
 
-Changing one of those fields changes the current hash. The previous approved hash is retained for audit visibility but becomes stale; `READY` is blocked until a fresh `admin:pool:<id>:review` challenge is signed and persisted. Changing the configured adapter version has the same effect.
+Pool review hashes bind transaction-relevant fields including mints, decimals, venue, authority, treasury, liquidity, fee tier, launch time, sale linkage, graduation threshold and adapter version. Any bound-field change invalidates the prior approval and requires a new signed review.
 
-## Safety invariants
+## Fee semantics
 
-1. Zero-value financial operations are rejected.
-2. The configured PowerChain platform fee must remain **200 bps (2%)**.
-3. Solana network fees are separate and paid by the transaction payer.
-4. Private keys are never requested or stored.
-5. A browser-submitted signature is not completion evidence by itself; RPC confirmation and exact intent-message matching are required.
-6. Mainnet-sensitive actions fail closed until real mint, merchant, treasury, authority and program identities are configured.
-7. Administrator authorization uses a one-time nonce challenge bound to wallet, purpose and expiry.
-8. Administrator transaction views return `VALIDATED` records only.
-9. Pool records cannot become `READY` while validation blockers remain or while the approved review snapshot is missing/stale.
-10. Base/quote decimals are explicit pool configuration and are checked against a linked sale before review approval.
-11. Sale stages use controlled transitions; a hard cap cannot be reduced below authoritative sold base units.
-12. A configured venue adapter version does not imply executable code; pool execution remains disabled until the transaction builder is explicitly registered as implemented.
-13. Sale and pool administrative mutations require the current record revision; stale signed updates fail with a conflict instead of overwriting newer state.
-14. Pool review approval is bound to the current configuration revision and records the approving wallet for audit visibility.
-15. Venue-specific pool creation remains disabled until a real server-side adapter is implemented, tested, configured and reconciled.
-16. The service worker never caches `/api/*` or `/dashboard/admin*` responses.
-17. `.data/` and local environment files are ignored to reduce accidental persistence/secret commits.
+### SOL and USDC checkout
 
-## Payment fee semantics
+The merchant receives the quoted merchant amount. The payer also signs the explicit **2% PowerChain platform-fee transfer** to the configured fee treasury and pays the Solana network fee.
 
-### SOL / USDC
+### PWRC Token-2022 checkout
 
-The merchant receives the quoted merchant amount. The payer signs an additional explicit **2% PowerChain platform-fee transfer** to the configured fee treasury and pays the Solana network fee.
+PWRC payments use the mint-level Token-2022 `TransferFeeConfig`. The server verifies the active transfer-fee policy before building a payment and grosses up the transfer so the merchant receives the intended net amount.
 
-### PWRC Token-2022
+If the configured mint policy cannot satisfy the required 200 bps effective fee, settlement fails closed.
 
-PWRC uses the mint-level Token-2022 `TransferFeeConfig`. Before a quote/build, the server verifies that the active fee is exactly **200 bps** and, when configured, that the withdraw-withheld authority matches PowerChain policy. The payment is grossed up so the merchant receives the intended net amount. If the mint's `maximumFee` cap would reduce the effective fee below 2%, the payment fails closed.
+A normal user-to-user PWRC send does not add a second checkout platform fee; the mint-level Token-2022 transfer fee still applies according to the mint configuration.
 
-A personal PWRC send does not add a second PowerChain checkout fee; the mint-level Token-2022 transfer fee still applies according to the mint configuration.
+## Security invariants
 
-## Immutable/idempotent quotes
+- Private keys are never requested, accepted or stored.
+- Browser state is never authoritative for balances, prices, sale settlement or pool readiness.
+- Financial operations require positive non-zero amounts.
+- Quotes are immutable and idempotent.
+- Wallet signatures are bound to exact server-generated transaction messages.
+- A submitted signature alone is not settlement evidence.
+- Administrator authorization uses a one-time nonce bound to wallet, purpose and expiry.
+- Administrator transaction views expose validated records only.
+- Sale and pool mutations require the current record revision; stale writes fail with a conflict.
+- Pool review approval is bound to the current configuration revision.
+- Mainnet-sensitive actions fail closed until required identities and program configuration are present.
+- Dynamic API, admin, sale, payment and pool state is not served from the PWA offline cache.
 
-`POST /api/v1/quotes` requires an `idempotencyKey`. The server hashes the normalized request, persists the quote and returns the same quote when the same key is replayed with the same request. Reusing the key with changed amount/asset/sale data returns `IDEMPOTENCY_CONFLICT`.
+## Architecture
 
-Transaction construction requires the stored `quoteId + quoteHash`. The transaction intent then persists the SHA-256 hash of the exact unsigned Solana message. After signing, `/api/v1/transactions` confirms the chain transaction, requires the on-chain message hash to match the persisted intent, consumes the intent once, and only then records validated settlement state.
+```text
+Browser / Wallet
+      │
+      ▼
+Next.js App Router
+      │
+      ├── Public launch / sale / pool UI
+      ├── Wallet transaction review + signing
+      ├── Admin authority UI
+      └── API v1
+              │
+              ├── Quote + intent validation
+              ├── Sale / pool lifecycle policy
+              ├── Signature + RPC reconciliation
+              ├── Token-2022 validation
+              └── Repository boundary
+                       │
+                       └── JSON development store
+                           (replace for production)
+```
 
-## On-chain sale reference program
+The bundled JSON repository is intended for local single-node development only. Production deployments must use a durable transactional repository such as PostgreSQL/Supabase with appropriate constraints, locking, auditability and backup policy.
 
-`programs/tokensale` defines `initialize_sale`, `purchase`, and `claim`. A purchase enforces the live window and hard cap, transfers the configured SOL cost to the merchant, transfers the fixed 200-bps PowerChain fee to the fee treasury and increases a buyer allocation PDA. `claim` transfers the unclaimed Token-2022 allocation from the sale vault after `claim_at`.
+## Configuration
 
-The web claim endpoint remains **fail closed** until the deployed claim/sale program IDL and vault configuration are supplied. It does not return a fake success transaction.
-
-## PWA behavior
-
-The service worker caches the public shell and static local assets only. It does not cache API responses or admin pages, preventing stale transactional state from being replayed from the browser cache.
-
-## Run
+Copy the environment template:
 
 ```bash
 cp .env.example .env.local
+```
+
+At minimum, production settlement requires validated values for the relevant:
+
+- Solana cluster and RPC endpoint;
+- PWRC / USDC mint identities;
+- PowerChain fee treasury;
+- merchant and sale authority wallets;
+- administrator allowlist;
+- deployed program IDs; and
+- enabled pool adapter versions/builders.
+
+Secrets and private material must never be exposed through `NEXT_PUBLIC_*` variables.
+
+## Development
+
+```bash
 npm install
 npm run typecheck
 npm run build
 npm run dev
 ```
 
-Before production/mainnet: use a durable transactional PostgreSQL/Supabase repository, deploy audited Anchor programs, implement and pin the selected DEX adapter SDK/version, verify pool creation and LP custody semantics, add indexer/webhook reconciliation with RPC fallback, and configure all authority/mint/program addresses.
+Production runtime:
 
-## Validation note for this packaged artifact
+```bash
+npm run build
+npm run start
+```
 
-The source was syntax-transpiled locally after the upgrade. The execution container used to prepare this archive could not resolve `registry.npmjs.org`, so dependency installation and a dependency-resolved `next build` could not be rerun here. The container also does not include the Rust `cargo` executable, so the Anchor reference programs were not cargo-checked in this pass. Run `npm install && npm run typecheck && npm run build` plus the project's Rust/Anchor checks in a fully provisioned development environment before deployment.
+## Production release gate
 
+Do not treat configuration presence as production readiness. Before mainnet deployment:
 
-## v1.3.0 operational hardening
+- run a frozen/reproducible dependency install in CI;
+- pass TypeScript and Next.js production builds;
+- run dependency and secret scanning;
+- deploy a transactional production database and apply schema constraints/migrations;
+- deploy and audit the Anchor programs;
+- pin and test Solana RPC/indexer providers and reconciliation fallbacks;
+- implement and integration-test the selected DEX pool adapters;
+- verify PWRC Token-2022 mint extension configuration and authorities;
+- verify treasury, merchant, admin and program identities against the intended network;
+- test wallet signing, retries, idempotency, stale revisions and unknown transaction outcomes;
+- test legal/PWA/accessibility behavior across supported browsers and mobile sizes; and
+- monitor health/readiness endpoints without exposing secrets.
 
-- Adds record revisions to sales and pools and configuration revisions to pool review-bound state.
-- Rejects stale operator saves/review approvals with HTTP 409 revision conflicts.
-- Stores the review approver and approved configuration revision alongside the deterministic hash.
-- Adds an explicit execution-readiness model separate from configuration-review readiness.
-- Requires Ready status, launch time, linked-sale graduation threshold and an implemented venue builder before execution can become eligible.
-- Adds a server-only venue capability registry; configured version strings no longer imply implementation.
-- Adds exact BigInt-safe initial-price rendering and removes the previous Number-based pool-price calculation path.
-- Adds public pool readiness API responses so external clients consume canonical server lifecycle logic.
-- Upgrades the authority console with validated settlement counters, pool readiness counters, accepted-asset editing, tier editing and recent signed audit events.
-- Fixes clearing an optional custom pool fee tier back to the venue default.
-- Expands health reporting to distinguish configured from implemented pool adapters without exposing secrets.
+## Repository documentation
 
-## v1.2.0 pool hardening
+- [`CHANGELOG.md`](./CHANGELOG.md) — canonical release history.
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — contribution and validation requirements.
+- [`.env.example`](./.env.example) — non-secret configuration contract.
 
-- Separates configuration mutation from review approval.
-- Retains the last approved hash instead of silently replacing it on edit.
-- Detects stale review snapshots after any transaction-bound parameter or adapter-version change.
-- Adds explicit base/quote decimals and validates linked-sale mint decimals.
-- Computes display liquidity and initial price using configured decimals instead of symbol heuristics.
-- Adds linked-sale graduation progress against `graduationThresholdBps`.
-- Adds venue filtering and token/pair search to the public pool registry.
-- Enforces administrative pool-state transition rules and requires future launch time for `SCHEDULED`.
-- Enforces sale-stage transitions, claim-window timing and hard-cap safety.
-- Expands `/api/v1/health` with non-secret configuration readiness signals.
+## Release status
+
+The repository version is intentionally normalized to **1.0.0** across package metadata and runtime health output. Iterative internal hardening is consolidated into this canonical release rather than represented as separate 1.1/1.2/1.3 product versions.
