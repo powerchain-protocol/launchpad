@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="shell py-16"><div className="card animate-pulse p-8"><div className="h-4 w-28 rounded bg-slate-200"/><div className="mt-5 h-10 w-2/3 rounded bg-slate-200"/><div className="mt-4 h-5 w-full rounded bg-slate-100"/></div></main>}

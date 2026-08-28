@@ -1,0 +1,2 @@
+"use client";
+export async function settleIntent(intentId:string,signature:string){let last:any=null;for(let i=0;i<5;i++){const r=await fetch("/api/v1/transactions",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({intentId,signature})});last=await r.json();if(r.ok&&last.transaction?.status==="VALIDATED")return last;if(r.status>=400&&r.status!==408)throw new Error(last.error||"Transaction validation failed");await new Promise(resolve=>setTimeout(resolve,900))}return last}

@@ -1,0 +1,1 @@
+import Link from "next/link";export default function NotFound(){return <main className="shell py-24 text-center"><div className="label">404</div><h1 className="mt-3 text-4xl font-extrabold">Page not found</h1><p className="mt-3 muted">The route does not exist or has moved.</p><Link href="/" className="btn btn-primary mt-7">Return home</Link></main>}

@@ -1,0 +1,1 @@
+import {notFound} from "next/navigation";import {getSale} from "@/lib/server/store";import {SaleClient} from "./sale-client";export const dynamic="force-dynamic";export default async function SalePage({params}:{params:Promise<{id:string}>}){const {id}=await params;const found=await getSale(id);if(!found)notFound();const sale=found!;return <SaleClient sale={sale}/>}

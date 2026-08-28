@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function Logo({compact=false}:{compact?:boolean}){return <Link href="/" aria-label="PowerChain home" className="inline-flex items-center gap-2 font-extrabold tracking-tight"><svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><path fill="#0b6b38" d="M10 10h31c12 0 18 6 18 16 0 9-6 15-18 16H29L17 58l5-22h19c5 0 8-3 8-8s-3-8-8-8H23l-13-10Z"/><path fill="#16b364" d="M27 27h17L16 54l7-17 4-10Z"/></svg>{!compact&&<span className="text-[21px]">Power<span className="font-medium">Chain</span></span>}</Link>}
