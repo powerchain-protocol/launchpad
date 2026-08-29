@@ -1,0 +1,38 @@
+module powerchain_token_template::{{MODULE_NAME}};
+
+use sui::coin_registry;
+use sui::event;
+
+public struct TokenCreated has copy, drop {
+    creator: address,
+    name: vector<u8>,
+    symbol: vector<u8>,
+}
+
+/// One-time witness. The generated type name must correspond to the generated
+/// token module and is never taken directly from untrusted source text.
+public struct {{WITNESS_NAME}} has drop {}
+
+fun init(witness: {{WITNESS_NAME}}, ctx: &mut TxContext) {
+    let (builder, treasury_cap) = coin_registry::new_currency_with_otw(
+        witness,
+        {{DECIMALS}},
+        b"{{SYMBOL}}".to_string(),
+        b"{{NAME}}".to_string(),
+        b"{{DESCRIPTION}}".to_string(),
+        b"{{ICON_URL}}".to_string(),
+        ctx,
+    );
+
+    let metadata_cap = builder.finalize(ctx);
+    let sender = ctx.sender();
+
+    event::emit(TokenCreated {
+        creator: sender,
+        name: b"{{NAME}}",
+        symbol: b"{{SYMBOL}}",
+    });
+
+    transfer::public_transfer(treasury_cap, sender);
+    transfer::public_transfer(metadata_cap, sender);
+}

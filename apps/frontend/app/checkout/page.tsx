@@ -1,0 +1,1 @@
+import { DashboardFrame } from "@/components/layout/dashboard-frame";import { CheckoutClient } from "@/components/pages/checkout-client";export default function Page(){return <DashboardFrame><CheckoutClient/></DashboardFrame>}

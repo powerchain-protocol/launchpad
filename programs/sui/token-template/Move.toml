@@ -1,0 +1,8 @@
+[package]
+name = "powerchain_token_template"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+powerchain_token_template = "0x0"

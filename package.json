@@ -2,33 +2,39 @@
   "name": "powerchain-launchpad",
   "version": "1.0.0",
   "private": true,
-  "description": "PowerChain Launchpad \u2014 production-oriented Solana Token-2022 token sales, claims, payments and controlled liquidity-pool graduation.",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run build"
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22.16.0"
   },
-  "dependencies": {
-    "@solana/spl-token": "^0.4.15",
-    "@solana/web3.js": "^1.98.4",
-    "bs58": "^6.0.0",
-    "next": "16.3.3",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "tweetnacl": "^1.0.3"
+  "scripts": {
+    "dev": "pnpm --parallel --filter @powerchain/launchpad-frontend --filter @powerchain/launchpad-backend --filter @powerchain/launchpad-realtime dev",
+    "build": "pnpm prisma:generate && pnpm -r --if-present build",
+    "typecheck": "pnpm prisma:generate && pnpm -r --if-present typecheck",
+    "lint": "node scripts/check-typescript-syntax.mjs && node scripts/check-accessibility.mjs && node scripts/check-architecture.mjs",
+    "test": "node --test packages/domain/src/**/__tests__/*.test.ts",
+    "test:programs": "anchor test",
+    "idl:build": "anchor idl build",
+    "programs:build": "anchor build",
+    "programs:build:verifiable": "anchor build --verifiable",
+    "sui:build": "sui move build --path programs/sui/launchpad && sui move build --path programs/sui/token-template",
+    "keys:sync": "bash scripts/sync-program-ids.sh",
+    "check": "node scripts/validate-production.mjs && node scripts/check-architecture.mjs && node scripts/check-accessibility.mjs && node scripts/check-typescript-syntax.mjs && node scripts/validate-anchor-idl.mjs && node scripts/validate-sui-contracts.mjs && node scripts/validate-d1-migration.mjs && pnpm typecheck",
+    "check:static": "node scripts/validate-production.mjs && node scripts/check-architecture.mjs && node scripts/check-accessibility.mjs && node scripts/check-typescript-syntax.mjs && node scripts/validate-anchor-idl.mjs && node scripts/validate-sui-contracts.mjs && node scripts/validate-d1-migration.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "node scripts/assert-production-database.mjs && prisma migrate deploy",
+    "check:accessibility": "node scripts/check-accessibility.mjs",
+    "validate:d1": "node scripts/validate-d1-migration.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "check:syntax": "node scripts/check-typescript-syntax.mjs"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.15.0",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "postcss": "^8.5.0",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3"
-  },
-  "engines": {
-    "node": ">=20.9.0"
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.2",
+    "prisma": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "dotenv": "^17.2.2"
   }
 }

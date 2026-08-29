@@ -1,0 +1,29 @@
+{
+  "name": "bigint-buffer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PowerChain pure-JavaScript BigInt/byte-buffer conversion utilities for Node.js and browser runtimes.",
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "require": "./index.cjs",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.cjs",
+    "index.d.ts",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db { provider = "postgresql" }
+
+model Launch {
+  id                          String   @id
+  chain                       String
+  creatorWallet               String
+  tokenName                   String
+  tokenSymbol                 String
+  tokenDescription            String
+  tokenIconUri                String
+  tokenDecimals               Int
+  curveKind                   String   @default("bonding-curve")
+  initialPriceAtomic          String
+  graduationThresholdAtomic   String
+  status                      String
+  graduationVenue             String
+  graduationAdapterRegistryId String?
+  graduationAdapterId         String?
+  graduationAdapterVersion    Int?
+  graduationAdapterEntry      String?
+  graduationAdapterConfigHash String?
+  graduationVenueLocked       Boolean  @default(false)
+  reviewHash                  String?
+  reviewSignature             String?
+  reviewKeyId                 String?
+  antiBotDelaySeconds         Int      @default(0)
+  opensAt                     DateTime?
+  closesAt                    DateTime?
+  maxPerWalletAtomic          String?
+  eligibilityMode             String?
+  eligibilityPolicyId         String?
+  eligibilityCommitment       String?
+  tokenAddress                String?
+  packageId                   String?
+  treasuryCapObjectId         String?
+  tokenDeployTx               String?
+  configureTx                 String?
+  vestingAddress              String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  launchedAt                  DateTime?
+  payouts                     LaunchPayout[]
+  devBuy                      LaunchDevBuy?
+  snapshots                   ConfigurationReviewSnapshot[]
+  audit                       LaunchAudit[]
+  @@index([chain,status])
+  @@index([creatorWallet,createdAt])
+}
+
+model LaunchPayout {
+  id          String @id @default(cuid())
+  launchId    String
+  recipient   String
+  basisPoints Int
+  label       String?
+  launch      Launch @relation(fields:[launchId],references:[id],onDelete:Cascade)
+  @@unique([launchId,recipient])
+}
+
+model LaunchDevBuy {
+  launchId            String @id
+  enabled             Boolean @default(true)
+  paymentAsset        String
+  amountAtomic        String
+  vestingEnabled      Boolean @default(false)
+  vestingTemplateJson Json?
+  launch              Launch @relation(fields:[launchId],references:[id],onDelete:Cascade)
+}
+
+model GraduationAdapter {
+  id                   String   @id
+  chain                String
+  venue                String
+  version              Int
+  registryId           String
+  registryEntryAddress String?
+  configHash           String?
+  status               String   @default("active")
+  governanceProposalId String?
+  approvedAt           DateTime
+  createdAt            DateTime @default(now())
+  @@unique([chain,venue,version])
+  @@index([chain,venue,status])
+}
+
+model ConfigurationReviewSnapshot {
+  hash             String   @id
+  launchId         String
+  chain            String
+  stage            String
+  hashAlgorithm    String
+  signatureAlgorithm String
+  signature        String
+  keyId            String
+  canonicalPayload String
+  createdAt        DateTime @default(now())
+  launch           Launch @relation(fields:[launchId],references:[id],onDelete:Cascade)
+  @@index([launchId,createdAt])
+}
+
+model LaunchAudit {
+  id           BigInt   @id @default(autoincrement())
+  launchId     String
+  eventType    String
+  payloadHash  String
+  previousHash String?
+  payloadJson  Json
+  createdAt    DateTime @default(now())
+  launch       Launch @relation(fields:[launchId],references:[id],onDelete:Cascade)
+  @@index([launchId,createdAt])
+}

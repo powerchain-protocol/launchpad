@@ -1,0 +1,1 @@
+import Link from "next/link";export default function NotFound(){return <div className="card stack"><div className="label">404</div><h1>Page not found</h1><p className="muted">The requested Launchpad route does not exist.</p><Link className="button" href="/">Return to Launchpad</Link></div>}

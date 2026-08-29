@@ -1,0 +1,3 @@
+import { AppError } from "@powerchain/launchpad-shared";import { handleApi, handleOptions } from "@/lib/http/handler";import { getClaimsReader } from "@/lib/claims/container";
+export const dynamic="force-dynamic";export function OPTIONS(request:Request){return handleOptions(request)}
+export async function GET(request:Request){return handleApi(request,async()=>{const url=new URL(request.url);const wallet=url.searchParams.get("wallet")?.trim();const chain=url.searchParams.get("chain");if(!wallet)throw new AppError("BAD_REQUEST","wallet is required.",400);if(chain!=="solana"&&chain!=="sui")throw new AppError("BAD_REQUEST","chain must be solana or sui.",400);return getClaimsReader().list(wallet,chain)},{rateLimit:{limit:120,windowSeconds:60}})}

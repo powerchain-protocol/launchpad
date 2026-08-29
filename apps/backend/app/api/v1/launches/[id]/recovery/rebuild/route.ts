@@ -1,0 +1,2 @@
+import { handleApi, handleOptions } from "@/lib/http/handler";import { getLaunchRecoveryService } from "@/lib/launches/container";
+export function OPTIONS(request:Request){return handleOptions(request)}export async function POST(request:Request,context:{params:Promise<{id:string}>}){return handleApi(request,async()=>getLaunchRecoveryService().rebuildPending((await context.params).id),{rateLimit:{limit:20,windowSeconds:60}})}

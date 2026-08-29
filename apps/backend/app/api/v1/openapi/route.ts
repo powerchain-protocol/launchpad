@@ -1,0 +1,55 @@
+import { handleApi, handleOptions } from "@/lib/http/handler";
+
+const document = {
+  openapi: "3.1.0",
+  info: { title: "PowerChain Launchpad API", version: "1.0.0" },
+  paths: {
+    "/api/v1/health": { get: { summary: "Service health" } },
+    "/api/v1/runtime/readiness": { get: { summary: "Runtime readiness" } },
+    "/api/v1/checkout/quotes": { post: { summary: "Create server-authoritative checkout quote" } },
+    "/api/v1/checkout/orders": { post: { summary: "Create idempotent order and prepared transaction" } },
+    "/api/v1/checkout/orders/{id}": { get: { summary: "Read checkout order state" } },
+    "/api/v1/checkout/orders/{id}/submit": { post: { summary: "Bind submitted chain transaction" } },
+    "/api/v1/checkout/orders/{id}/reconcile": { post: { summary: "RPC-verify and reconcile order" } },
+    "/api/v1/claims": { get: { summary: "Read verified vesting claims" } },
+    "/api/v1/rpc/health": { get: { summary: "Verify Solana RPC/cluster health, slot, block height, core version and latest blockhash" } },
+    "/api/v1/programs/verify": { get: { summary: "Verify PowerChain Launchpad, vesting, graduation registry and Token-2022 deployments" } },
+    "/api/v1/token/mint/{mint}": { get: { summary: "Inspect SPL or Token-2022 mint supply, decimals, authorities and extensions", parameters: [{ name: "mint", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/v1/token/market": { get: { summary: "Resolve Solana token market data through RPC plus configured Pyth/CoinGecko/CoinMarketCap providers", parameters: [{ name: "mint", in: "query", required: true, schema: { type: "string" } }] } },
+    "/api/v1/creator/{wallet}": { get: { summary: "Inspect public Solana creator wallet state and PowerPay balances", parameters: [{ name: "wallet", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/v1/powerpay/overview": { get: { summary: "Aggregate PowerPay RPC, program, checkout, mint and market readiness", parameters: [{ name: "mint", in: "query", required: false, schema: { type: "string" } }] } },
+    "/api/v1/powerpay/rpc": { get: { summary: "PowerPay Solana RPC and cluster health" } },
+    "/api/v1/powerpay/programs": { get: { summary: "Verify PowerPay Checkout, Settlements, Factory and Token-2022 dependencies" } },
+    "/api/v1/powerpay/market": { get: { summary: "Resolve PowerPay market data; defaults to configured PWRC mint", parameters: [{ name: "mint", in: "query", required: false, schema: { type: "string" } }] } },
+    "/api/v1/powerpay/mint/{mint}": { get: { summary: "PowerPay Token-2022/SPL mint inspection", parameters: [{ name: "mint", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/v1/solana/overview": { get: { summary: "Read Solana cluster overview including blockhash and provider health summary" } },
+    "/api/v1/solana/programs": { get: { summary: "Read configured Solana program deployment status" } },
+    "/api/v1/solana/market": { get: { summary: "Read Solana mint market data", parameters: [{ name: "mint", in: "query", required: true, schema: { type: "string" } }] } },
+    "/api/v1/solana/assets/{mint}": { get: { summary: "Read Solana mint/account state", parameters: [{ name: "mint", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/v1/sui/overview": { get: { summary: "Read Sui gRPC network overview, checkpoint, epoch, gas price and protocol version" } },
+    "/api/v1/sui/packages": { get: { summary: "Verify configured PowerChain Sui package and graduation-registry deployments" } },
+    "/api/v1/sui/market": { get: { summary: "Read Sui coin supply/metadata plus optional server-side market enrichment", parameters: [{ name: "coinType", in: "query", required: true, schema: { type: "string" } }] } },
+    "/api/v1/sui/assets/{coinType}": { get: { summary: "Inspect Sui coin metadata, supply, treasury and regulated-coin state", parameters: [{ name: "coinType", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/solana/overview": { get: { summary: "Compatibility alias for /api/v1/solana/overview" } },
+    "/api/token/market": { get: { summary: "Compatibility alias for /api/v1/token/market; defaults to configured PWRC_MINT when mint is omitted", parameters: [{ name: "mint", in: "query", required: false, schema: { type: "string" } }] } },
+    "/api/assets/{mint}": { get: { summary: "Compatibility alias for /api/v1/token/mint/{mint}", parameters: [{ name: "mint", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/sui/overview": { get: { summary: "Compatibility alias for /api/v1/sui/overview" } },
+    "/api/sui/packages": { get: { summary: "Compatibility alias for /api/v1/sui/packages" } },
+    "/api/sui/market": { get: { summary: "Compatibility alias for /api/v1/sui/market", parameters: [{ name: "coinType", in: "query", required: true, schema: { type: "string" } }] } },
+    "/api/sui/assets/{coinType}": { get: { summary: "Compatibility alias for /api/v1/sui/assets/{coinType}", parameters: [{ name: "coinType", in: "path", required: true, schema: { type: "string" } }] } },
+    "/api/v1/launches": { post: { summary: "Create launch draft" } },
+    "/api/v1/launches/{id}": { get: { summary: "Read launch" } },
+    "/api/v1/launches/{id}/token/prepare": { post: { summary: "Prepare creator transaction 1" } },
+    "/api/v1/launches/{id}/token/confirm": { post: { summary: "Verify creator transaction 1" } },
+    "/api/v1/launches/{id}/configure/simulate": { post: { summary: "Simulate creator transaction 2" } },
+    "/api/v1/launches/{id}/configure/prepare": { post: { summary: "Prepare creator transaction 2" } },
+    "/api/v1/launches/{id}/configure/confirm": { post: { summary: "Verify creator transaction 2" } },
+    "/api/v1/launches/{id}/graduation/preview": { get: { summary: "Preview governed graduation" } },
+    "/api/v1/launches/{id}/recovery/rebuild": { post: { summary: "Rebuild an expired pending transaction without a new stage" } },
+    "/api/v1/launches/analytics": { get: { summary: "Normalized cross-chain launch analytics" } },
+    "/api/v1/launches/reconcile/webhook/{provider}": { post: { summary: "Accelerated reconciliation webhook; RPC remains authoritative" } }
+  }
+} as const;
+
+export async function GET(request: Request) { return handleApi(request, async () => document); }
+export function OPTIONS(request: Request) { return handleOptions(request); }

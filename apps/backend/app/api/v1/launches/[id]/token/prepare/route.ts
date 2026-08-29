@@ -1,0 +1,2 @@
+import { handleApi, handleOptions } from "@/lib/http/handler";import { getLaunchService } from "@/lib/launches/container";
+export function OPTIONS(request:Request){return handleOptions(request)}export async function POST(request:Request,context:{params:Promise<{id:string}>}){return handleApi(request,async()=>getLaunchService().prepareToken((await context.params).id),{rateLimit:{limit:30,windowSeconds:60}})}

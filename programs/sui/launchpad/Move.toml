@@ -1,0 +1,8 @@
+[package]
+name = "powerchain_launchpad"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+powerchain_launchpad = "0x0"

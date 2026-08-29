@@ -1,0 +1,36 @@
+{
+  "name": "@powerchain/launchpad-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@powerchain/launchpad-config": "workspace:*",
+    "@powerchain/launchpad-domain": "workspace:*",
+    "@powerchain/launchpad-program-client": "workspace:*",
+    "@powerchain/launchpad-shared": "workspace:*",
+    "@prisma/adapter-pg": "7.10.0",
+    "@solana/web3.js": "^1.98.4",
+    "next": "16.3.3",
+    "pg": "^8.16.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "@prisma/client": "7.10.0",
+    "@mysten/sui": "^2.0.0",
+    "@powerchain/sui": "workspace:*",
+    "@noble/hashes": "^2.0.0",
+    "@powerchain/launchpad-server": "workspace:*",
+    "@solana/spl-token": "^0.4.14",
+    "@powerchain/solana": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.15.5",
+    "typescript": "^5.9.2"
+  }
+}

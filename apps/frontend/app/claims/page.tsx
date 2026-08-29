@@ -1,0 +1,1 @@
+import { DashboardFrame } from "@/components/layout/dashboard-frame";import { ClaimsClient } from "@/components/pages/claims-client";export default function Page(){return <DashboardFrame><ClaimsClient/></DashboardFrame>}

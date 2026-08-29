@@ -1,0 +1,1 @@
+"use client";export default function ErrorPage({error,reset}:{error:Error;reset:()=>void}){return <div className="card stack"><div className="label">Application error</div><h1>Unable to render this surface</h1><p role="alert" className="danger">{error.message}</p><button className="button" type="button" onClick={reset}>Retry</button></div>}

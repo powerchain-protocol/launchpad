@@ -1,0 +1,21 @@
+{
+  "name": "@powerchain/sui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./launch": "./src/launch/index.ts"
+  },
+  "dependencies": {
+    "@mysten/sui": "^2.0.0",
+    "@powerchain/launchpad-domain": "workspace:*",
+    "@noble/hashes": "^2.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

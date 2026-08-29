@@ -1,0 +1,9 @@
+{
+  "name":"@powerchain/launchpad-server",
+  "version":"1.0.0",
+  "private":true,
+  "type":"module",
+  "exports":{".":"./src/index.ts","./realtime-token":"./src/realtime-token.ts"},
+  "scripts":{"typecheck":"tsc -p tsconfig.json"},
+  "devDependencies":{"@types/node":"^22.15.0","typescript":"^5.9.2"}
+}

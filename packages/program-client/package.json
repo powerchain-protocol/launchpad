@@ -1,0 +1,28 @@
+{
+  "name": "@powerchain/launchpad-program-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./launch": "./src/launch/index.ts",
+    "./launch/adapter": "./src/launch/adapter.ts",
+    "./solana/*": "./src/solana/*.ts"
+  },
+  "dependencies": {
+    "@anchor-lang/core": "1.0.2",
+    "@noble/hashes": "^2.0.0",
+    "@powerchain/launchpad-domain": "workspace:*",
+    "@powerchain/solana": "workspace:*",
+    "@powerchain/sui": "workspace:*",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "@mysten/sui": "^2.0.0",
+    "@solana/spl-token-metadata": "^0.1.6"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,22 @@
+[package]
+name = "powerchain-vesting-program"
+version = "1.0.0"
+description = "PowerChain Token-2022 vesting vault and claims program"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "powerchain_vesting_program"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "1.0.2"
+anchor-spl = { version = "1.0.2", features = ["token_2022", "token_2022_extensions"] }

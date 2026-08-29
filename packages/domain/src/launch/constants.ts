@@ -1,0 +1,16 @@
+export const BASIS_POINTS_TOTAL = 10_000;
+export const SUI_MIST_PER_SUI = 1_000_000_000n;
+export const SUI_LAUNCH_FEE_MIST = 2n * SUI_MIST_PER_SUI;
+
+export const TOKEN_2022_PROGRAM_ID =
+  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+
+export const MAX_PAYOUT_RECIPIENTS = 20;
+export const MAX_ANTI_BOT_DELAY_SECONDS = 3_600;
+export const MAX_TOKEN_NAME_LENGTH = 64;
+export const MAX_TOKEN_SYMBOL_LENGTH = 12;
+export const MAX_TOKEN_DESCRIPTION_LENGTH = 1_000;
+export const MAX_ICON_URI_LENGTH = 512;
+export const CONFIGURATION_HASH_HEX_LENGTH = 64;
+export const MAX_VESTING_TRANCHES = 32;
+export const MAX_ADAPTER_ID_LENGTH = 96;

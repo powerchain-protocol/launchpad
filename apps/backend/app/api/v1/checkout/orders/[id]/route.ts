@@ -1,0 +1,3 @@
+import { AppError } from "@powerchain/launchpad-shared";import { handleApi, handleOptions } from "@/lib/http/handler";import { getCheckoutRepository } from "@/lib/checkout/container";
+export const dynamic="force-dynamic";export function OPTIONS(request:Request){return handleOptions(request)}
+export async function GET(request:Request,context:{params:Promise<{id:string}>}){return handleApi(request,async()=>{const {id}=await context.params;const evidence=await getCheckoutRepository().getEvidence(id);if(!evidence)throw new AppError("NOT_FOUND","Checkout order not found.",404);const receipt=await getCheckoutRepository().getReceipt(id);return {evidence,...(receipt?{receipt}:{})}},{rateLimit:{limit:120,windowSeconds:60}})}
