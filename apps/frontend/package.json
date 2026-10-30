@@ -14,7 +14,7 @@
     "@mysten/sui": "^2.0.0",
     "@powerchain/launchpad-domain": "workspace:*",
     "@solana/web3.js": "^1.98.4",
-    "next": "16.3.3",
+    "next": "16.4.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "@powerchain/launchpad-shared": "workspace:*"
